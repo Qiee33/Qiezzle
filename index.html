@@ -1,0 +1,169 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qiezzle</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #c6d92d;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      height: 100vh;
+      position: relative;
+    }
+    h1 {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 30px 0 10px;
+      font-family: 'Georgia', serif;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      gap: 10px;
+      background: #000;
+      padding: 15px;
+      border-radius: 20px;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+    }
+    .tile {
+      width: 80px;
+      height: 80px;
+      background-color: #246b2d;
+      color: white;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button {
+      background: black;
+      color: white;
+      font-size: 20px;
+      border: none;
+      padding: 10px 30px;
+      margin: 20px;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+    #message {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -30%);
+      background-color: #8cc63f;
+      color: black;
+      font-size: 30px;
+      font-weight: bold;
+      padding: 30px 20px;
+      border-radius: 40px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      display: none;
+      z-index: 10;
+    }
+    #message button {
+      background: black;
+      color: white;
+      font-size: 20px;
+      border: none;
+      padding: 10px 30px;
+      margin-top: 20px;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+    #howto {
+      font-size: 18px;
+      margin: 10px;
+      text-align: center;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Qiezzle</h1>
+  <div class="grid" id="grid"></div>
+  <button onclick="shuffle()">ACAK</button>
+  <div id="message">
+    kamu menang<br>
+    <button onclick="shuffle()">ULANG</button>
+  </div>
+  <div id="howto">
+    Klik ubin angka di sebelah kotak kosong untuk memindahkannya. Susun angka dari 1 sampai 8 untuk menang.
+  </div>
+  <script>
+    let tiles = [];
+    const grid = document.getElementById('grid');
+    const message = document.getElementById('message');
+
+    function createTiles() {
+      grid.innerHTML = '';
+      tiles.forEach((num, i) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        if (num !== 0) tile.textContent = num;
+        else tile.style.backgroundColor = '#c6d92d';
+        tile.addEventListener('click', () => moveTile(i));
+        grid.appendChild(tile);
+      });
+    }
+
+    function shuffle() {
+      let nums;
+      do {
+        nums = [...Array(8).keys()].map(i => i + 1).concat(0).sort(() => Math.random() - 0.5);
+      } while (!isSolvable(nums));
+      tiles = nums;
+      createTiles();
+      message.style.display = 'none';
+    }
+
+    function moveTile(index) {
+      const emptyIndex = tiles.indexOf(0);
+      const swapable = [
+        index - 1, index + 1,
+        index - 3, index + 3
+      ];
+      if (swapable.includes(emptyIndex) && isValidMove(index, emptyIndex)) {
+        [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        createTiles();
+        if (checkWin()) {
+          message.style.display = 'block';
+        }
+      }
+    }
+
+    function isValidMove(i, empty) {
+      if (i % 3 === 0 && empty === i - 1) return false;
+      if (i % 3 === 2 && empty === i + 1) return false;
+      return true;
+    }
+
+    function checkWin() {
+      for (let i = 0; i < 8; i++) {
+        if (tiles[i] !== i + 1) return false;
+      }
+      return true;
+    }
+
+    function isSolvable(arr) {
+      let inv = 0;
+      for (let i = 0; i < arr.length; i++) {
+        for (let j = i + 1; j < arr.length; j++) {
+          if (arr[i] && arr[j] && arr[i] > arr[j]) inv++;
+        }
+      }
+      return inv % 2 === 0;
+    }
+
+    shuffle();
+  </script>
+</body>
+</html>
